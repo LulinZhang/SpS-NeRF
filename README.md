@@ -22,3 +22,6 @@ If you find this code or work helpful, please cite:
 
 
 ### Codes are coming soon.
+
+### Acknowledgements
+We thank [satnerf](https://github.com/centreborelli/satnerf) and [dense_depth_priors_nerf](https://github.com/barbararoessle/dense_depth_priors_nerf), from which this repository borrows code. 
