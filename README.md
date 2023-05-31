@@ -12,17 +12,6 @@ This work is accepted at the [ISPRS Annals 2023](https://gsw2023.com/).
 
 > **Abstract:** *Digital surface model generation using traditional multi-view stereo matching (MVS) performs poorly over non-Lambertian surfaces, with asynchronous acquisitions, or at discontinuities. Neural radiance fields (NeRF) offer a new paradigm for reconstructing surface geometries using continuous volumetric representation. NeRF is self-supervised, does not require ground truth geometry for training, and provides an elegant way to include in its representation physical parameters about the scene, thus potentially remedying the challenging scenarios where MVS fails. However, NeRF and its variants require many views to produce convincing scene’s geometries which in earth observation satellite imaging is rare. In this paper we present SparseSat-NeRF (SpS-NeRF) – an extension of Sat-NeRF adapted to sparse satellite views. SpS-NeRF employs dense depth supervision guided by cross-correlation similarity metric provided by traditional semi-global MVS matching. We demonstrate the effectiveness of our approach on stereo and tri-stereo Pleiades 1B/WorldView-3 images, and compare against NeRF and Sat-NeRF.*
 
-## Citation
-If you find this code or work helpful, please cite:
-```
-@article{zhang2023spsnerf,
-   author = {Lulin Zhang and Ewelina Rupnik},
-   title = {SparseSat-NeRF: Dense Depth Supervised Neural Radiance Fields for Sparse Satellite Images},
-   journal = {ISPRS Annals},
-   year = {2023}
-}
-```
-
 
 ## Setup
 ### Compulsory
@@ -72,6 +61,46 @@ python3 main.py --aoi_id "$aoi_id" --model sps-nerf --exp_name "$exp_name" --roo
 
 *Please replace the value of `ProjDir` in the second line in the above script to your own `ProjDir`.*
 
+## 2. Test SpS-NeRF
+### Render novel views
+```
+conda activate satnerf
+Output=/gpfs/users/lzhang/SatNeRFProj/DFCDataClean_2imgs/SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1/
+logs_dir="$Output"/logs
+run_id=SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1
+output_dir="$Output"/eval_satnerf
+epoch_number=28
+
+python3 eval_satnerf.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_dir" --epoch_number "$epoch_number" --split val
+```
+
+*Please replace the value of `Output`, `run_id`, `output_dir` and `epoch_number` in the above script to your own settings.*
+
+### Generate DSM (Digital Surface Model)
+```
+conda activate satnerf
+Output=/gpfs/users/lzhang/SatNeRFProj/DFCDataClean_2imgs/SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1/
+logs_dir="$Output"/logs
+run_id=SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1
+output_dir="$Output"/create_satnerf_dsm
+epoch_number=28
+
+python3.6 ../../code/SpS-NeRF/create_satnerf_dsm.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_dir" --epoch_number "$epoch_number"
+```
+
+*Please replace the value of `Output`, `run_id`, `output_dir` and `epoch_number` in the above script to your own settings.*
+
 
 ### Acknowledgements
 We thank [satnerf](https://github.com/centreborelli/satnerf) and [dense_depth_priors_nerf](https://github.com/barbararoessle/dense_depth_priors_nerf), from which this repository borrows code. 
+
+## Citation
+If you find this code or work helpful, please cite:
+```
+@article{zhang2023spsnerf,
+   author = {Lulin Zhang and Ewelina Rupnik},
+   title = {SparseSat-NeRF: Dense Depth Supervised Neural Radiance Fields for Sparse Satellite Images},
+   journal = {ISPRS Annals},
+   year = {2023}
+}
+```
