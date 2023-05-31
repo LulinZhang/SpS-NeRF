@@ -118,7 +118,6 @@ def dsm_pointwise_diff(in_dsm_path, gt_dsm_path, dsm_metadata, gt_mask_path=None
     bbx_metadata is a 4-valued array with format (x, y, s, r)
     where [x, y] = offset of the dsm bbx, s = width = height, r = resolution (m per pixel)
     """
-
     from osgeo import gdal
 
     unique_identifier = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
@@ -133,7 +132,6 @@ def dsm_pointwise_diff(in_dsm_path, gt_dsm_path, dsm_metadata, gt_mask_path=None
     # define projwin for gdal translate
     ulx, uly, lrx, lry = xoff, yoff + ysize * resolution, xoff + xsize * resolution, yoff
     
-    #print('gdal imported')
     # crop predicted dsm using gdal translate
     ds = gdal.Open(in_dsm_path)
     ds = gdal.Translate(pred_dsm_path, ds, projWin=[ulx, uly, lrx, lry])

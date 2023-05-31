@@ -7,7 +7,66 @@ import datetime
 import json
 import os
 
-def get_opts():
+def Test_parser():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--run_id", type=str, default=None,
+                        help='exp_name when training SpS-NeRF')
+    #parser.add_argument("--aoi_id", type=str, default=None,
+    #                    help='None')
+    parser.add_argument("--logs_dir", type=str, default=None,
+                        help='logs_dir when training SpS-NeRF')
+    parser.add_argument("--output_dir", type=str, default=None,
+                        help='directory to save the output')
+    parser.add_argument("--epoch_number", type=int, default=28,
+                        help='epoch_number when training SpS-NeRF')
+    parser.add_argument("--split", type=str, default='val',
+                        help='None')
+
+    return parser.parse_args()
+
+def printArgs(args):
+    print('--aoi_id: ', args.aoi_id)
+    print('--beta: ', args.beta)
+    print('--sc_lambda: ', args.sc_lambda)
+    print('--mapping: ', args.mapping)
+    print('--inputdds: ', args.inputdds)
+    print('--ds_lambda: ', args.ds_lambda)
+    print('--ds_drop: ', args.ds_drop)
+    print('--GNLL: ', args.GNLL)
+    print('--usealldepth: ', args.usealldepth)
+    print('--guidedsample: ', args.guidedsample)
+    print('--margin: ', args.margin)
+    print('--stdscale: ', args.stdscale)
+    print('--corrscale: ', args.corrscale)
+    print('--model: ', args.model)
+    print('--exp_name: ', args.exp_name)
+    print('--lr: ', args.lr)
+    print('--n_samples: ', args.n_samples)
+    print('--n_importance: ', args.n_importance)
+    print('------------------------------')
+    print('--root_dir: ', args.root_dir)
+    print('--img_dir: ', args.img_dir)
+    print('--ckpts_dir: ', args.ckpts_dir)
+    print('--logs_dir: ', args.logs_dir)
+    print('--gt_dir: ', args.gt_dir)
+    print('--cache_dir: ', args.cache_dir)
+    print('--ckpt_path: ', args.ckpt_path)
+    print('--gpu_id: ', args.gpu_id)
+    print('--batch_size: ', args.batch_size)
+    print('--img_downscale: ', args.img_downscale)
+    print('--max_train_steps: ', args.max_train_steps)
+    print('--save_every_n_epochs: ', args.save_every_n_epochs)
+    print('--fc_units: ', args.fc_units)
+    print('--fc_layers: ', args.fc_layers)
+    print('--noise_std: ', args.noise_std)
+    print('--chunk: ', args.chunk)
+    print('--ds_noweights: ', args.ds_noweights)
+    print('--first_beta_epoch: ', args.first_beta_epoch)
+    print('--t_embbeding_tau: ', args.t_embbeding_tau)
+    print('--t_embbeding_vocab: ', args.t_embbeding_vocab)
+
+def Train_parser():
     parser = argparse.ArgumentParser()
 
     # input paths

@@ -17,6 +17,9 @@ import shutil
 import warnings
 warnings.filterwarnings("ignore")
 
+import argparse
+from opt import Test_parser, printArgs
+
 #os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
 
 def extract_model_state_dict(ckpt_path, model_name='model', prefixes_to_ignore=[]):
@@ -184,17 +187,11 @@ def find_best_embeddings_for_val_dataset(val_dataset, models, conf, train_indice
 
 def predefined_val_ts(img_id):    
     return 0
-'''
+
 def eval_aoi(run_id, logs_dir, output_dir, epoch_number, split, checkpoints_dir=None, root_dir=None, img_dir=None, gt_dir=None):
     from datasets import SatelliteDataset
-    print(logs_dir)
     with open('{}/opts.json'.format(os.path.join(logs_dir, run_id)), 'r') as f:
         args = argparse.Namespace(**json.load(f))
-
-    #args.root_dir = "/mnt/cdisk/roger/Datasets" + args.root_dir.split("Datasets")[-1]
-    #args.img_dir = "/mnt/cdisk/roger/Datasets" + args.img_dir.split("Datasets")[-1]
-    #args.cache_dir = "/mnt/cdisk/roger/Datasets" + args.cache_dir.split("Datasets")[-1]
-    #args.gt_dir = "/mnt/cdisk/roger/Datasets" + args.gt_dir.split("Datasets")[-1]
 
     if gt_dir is not None:
         assert os.path.isdir(gt_dir)
@@ -208,6 +205,8 @@ def eval_aoi(run_id, logs_dir, output_dir, epoch_number, split, checkpoints_dir=
     if not os.path.isdir(args.cache_dir):
         args.cache_dir = None
 
+    printArgs(args)
+
     # load pretrained nerf
     if checkpoints_dir is None:
         checkpoints_dir = args.ckpts_dir
@@ -216,6 +215,7 @@ def eval_aoi(run_id, logs_dir, output_dir, epoch_number, split, checkpoints_dir=
     # prepare dataset
     dataset = SatelliteDataset(args.root_dir, args.img_dir, split="val",
                                img_downscale=args.img_downscale, cache_dir=args.cache_dir)
+
     if split == "train":
         with open(os.path.join(args.root_dir, "train.txt"), "r") as f:
             json_files = f.read().split("\n")
@@ -228,7 +228,6 @@ def eval_aoi(run_id, logs_dir, output_dir, epoch_number, split, checkpoints_dir=
     psnr, ssim, mae = [], [], []
 
     for i in samples_to_eval:
-
         sample = dataset[i]
         rays, rgbs = sample["rays"].cuda(), sample["rgbs"]
         rays = rays.squeeze()  # (H*W, 3)
@@ -267,7 +266,7 @@ def eval_aoi(run_id, logs_dir, output_dir, epoch_number, split, checkpoints_dir=
 
         # geometry metrics
         pred_dsm_path = "{}/dsm/{}_epoch{}.tif".format(out_dir, src_id, epoch_number)
-        mae_ = sat_utils.compute_mae_and_save_dsm_diff(pred_dsm_path, src_id, args.gt_dir, out_dir, epoch_number)
+        mae_ = sat_utils.compute_mae_and_save_dsm_diff(pred_dsm_path, src_id, args.aoi_id, args.gt_dir, out_dir, epoch_number)
         mae.append(mae_)
         print("{}: pnsr {:.3f} / ssim {:.3f} / mae {:.3f}".format(src_id, psnr_, ssim_, mae_))
 
@@ -287,7 +286,10 @@ def eval_aoi(run_id, logs_dir, output_dir, epoch_number, split, checkpoints_dir=
     print("Mean SSIM: {:.3f}".format(np.mean(np.array(ssim))))
     print("Mean MAE: {:.3f}\n".format(np.mean(np.array(mae))))
 
+    print('eval_satnerf finished !')
+
 if __name__ == '__main__':
-    import fire
-    fire.Fire(eval_aoi)
-'''
+    args = Test_parser()
+
+    eval_aoi(args.run_id, args.logs_dir, args.output_dir, args.epoch_number, args.split)
+

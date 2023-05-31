@@ -5,7 +5,7 @@ import shutil
 import torch
 import pytorch_lightning as pl
 
-from opt import get_opts
+from opt import Train_parser, printArgs
 from datasets import load_dataset, satellite_rgb_dep
 from metrics import load_loss, DepthLoss, SNerfLoss
 from torch.utils.data import DataLoader
@@ -257,51 +257,9 @@ class NeRF_pl(pl.LightningModule):
     def get_current_epoch(self, tstep):
         return train_utils.get_epoch_number_from_train_step(tstep, len(self.train_dataset[0]), self.args.batch_size)
 
-def printArgs(args):
-    print('--aoi_id: ', args.aoi_id)
-    print('--beta: ', args.beta)
-    print('--sc_lambda: ', args.sc_lambda)
-    print('--mapping: ', args.mapping)
-    print('--inputdds: ', args.inputdds)
-    print('--ds_lambda: ', args.ds_lambda)
-    print('--ds_drop: ', args.ds_drop)
-    print('--GNLL: ', args.GNLL)
-    print('--usealldepth: ', args.usealldepth)
-    print('--guidedsample: ', args.guidedsample)
-    print('--margin: ', args.margin)
-    print('--stdscale: ', args.stdscale)
-    print('--corrscale: ', args.corrscale)
-    print('--model: ', args.model)
-    print('--exp_name: ', args.exp_name)
-    print('--lr: ', args.lr)
-    print('--n_samples: ', args.n_samples)
-    print('--n_importance: ', args.n_importance)
-    print('------------------------------')
-    print('--root_dir: ', args.root_dir)
-    print('--img_dir: ', args.img_dir)
-    print('--ckpts_dir: ', args.ckpts_dir)
-    print('--logs_dir: ', args.logs_dir)
-    print('--gt_dir: ', args.gt_dir)
-    print('--cache_dir: ', args.cache_dir)
-    print('--ckpt_path: ', args.ckpt_path)
-    print('--gpu_id: ', args.gpu_id)
-    print('--batch_size: ', args.batch_size)
-    print('--img_downscale: ', args.img_downscale)
-    print('--max_train_steps: ', args.max_train_steps)
-    print('--save_every_n_epochs: ', args.save_every_n_epochs)
-    print('--fc_units: ', args.fc_units)
-    print('--fc_layers: ', args.fc_layers)
-    print('--noise_std: ', args.noise_std)
-    print('--chunk: ', args.chunk)
-    print('--ds_noweights: ', args.ds_noweights)
-    print('--first_beta_epoch: ', args.first_beta_epoch)
-    print('--t_embbeding_tau: ', args.t_embbeding_tau)
-    print('--t_embbeding_vocab: ', args.t_embbeding_vocab)
-
-
 def main():
     torch.cuda.empty_cache()
-    args = get_opts()
+    args = Train_parser()
     printArgs(args)
     system = NeRF_pl(args)
 
