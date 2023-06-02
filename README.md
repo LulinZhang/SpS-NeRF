@@ -37,6 +37,19 @@ bash -i setup_ba_env.sh
 ## 1. Prepare dataset
 You can skip this step and directly download the [DFC2019 dataset AOI 214](https://drive.google.com/file/d/1LXfkxe_d3WSVgxK5y8q4Si-sUF6Fvv-R/view?usp=sharing).
 
+### Organize your data
+
+
+### Bundle adjustment
+```
+conda activate ba
+input_dir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/DFC2019/
+output_dir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/
+python3 create_satellite_dataset.py --aoi_id JAX_214 --dfc_dir "$input_dir" --output_dir "$output_dir" 
+```
+
+*Please replace the value of `input_dir` and `output_dir` in the second and third lines in the above script to your own value.*
+
 *Codes for preparing dataset are coming soon.*
 
 *You need to prepare a directory `ProjDir` to place the dataset.*
@@ -61,7 +74,7 @@ python3 main.py --aoi_id "$aoi_id" --model sps-nerf --exp_name "$exp_name" --roo
 
 *Please replace the value of `ProjDir` in the second line in the above script to your own `ProjDir`.*
 
-## 2. Test SpS-NeRF
+## 3. Test SpS-NeRF
 ### Render novel views
 ```
 conda activate satnerf
