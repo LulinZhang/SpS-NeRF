@@ -88,7 +88,7 @@ def create_dataset_from_DFC2019_data(nerf_dir, aoi_id, img_dir, dfc_dir, output_
     # contains: h, w, rpc, sun elevation, sun azimuth, acquisition date
     #           + geojson polygon with the aoi of the image
     os.makedirs(output_dir, exist_ok=True)
-    path_to_dsm = os.path.join(dfc_dir, "Track3-Truth/{}_DSM.tif".format(aoi_id))
+    path_to_dsm = os.path.join(dfc_dir, "Truth/{}_DSM.tif".format(aoi_id))
     if use_ba:
         from bundle_adjust import loader
         geotiff_paths = loader.load_list_of_paths(os.path.join(output_dir, "ba_files/ba_params/geotiff_paths.txt"))
@@ -174,7 +174,7 @@ def create_train_test_splits(input_sample_ids, test_percent=0.15, min_test_sampl
 
     return train_samples, test_samples
 
-#Input: ../Track3-Truth/JAX_068_DSM.txt (there contains origins, size and resolutions in UTM)
+#Input: ../Truth/JAX_068_DSM.txt (there contains origins, size and resolutions in UTM)
 #Ouput: Bounding box in longitude/latitude
 def read_DFC2019_lonlat_aoi(aoi_id, dfc_dir):
     from bundle_adjust import geo_utils
@@ -182,7 +182,7 @@ def read_DFC2019_lonlat_aoi(aoi_id, dfc_dir):
         zonestring = "17" #"17R"
     else:
         raise ValueError("AOI not valid. Expected JAX_(3digits) but received {}".format(aoi_id))
-    roi = np.loadtxt(os.path.join(dfc_dir, "Track3-Truth/" + aoi_id + "_DSM.txt"))
+    roi = np.loadtxt(os.path.join(dfc_dir, "Truth/" + aoi_id + "_DSM.txt"))
 
     xoff, yoff, xsize, ysize, resolution = roi[0], roi[1], int(roi[2]), int(roi[2]), roi[3]
     ulx, uly, lrx, lry = xoff, yoff + ysize * resolution, xoff + xsize * resolution, yoff
@@ -225,7 +225,7 @@ def create_satellite_dataset(aoi_id, dfc_dir, output_dir, mode='train', ba=True,
     if crop_aoi:
         # prepare crops
         aoi_lonlat = read_DFC2019_lonlat_aoi(aoi_id, dfc_dir)
-        img_dir = os.path.join(dfc_dir, "Track3-RGB/{}".format(aoi_id))
+        img_dir = os.path.join(dfc_dir, "RGB/{}".format(aoi_id))
         #myimages = sorted(glob.glob(img_dir + "/*.tif"))
         train_imgs = np.loadtxt(args.dfc_dir + '/train.txt', dtype='str')
 
@@ -251,7 +251,7 @@ def create_satellite_dataset(aoi_id, dfc_dir, output_dir, mode='train', ba=True,
         truth_dir = os.path.join(crops_dir, "Truth/")
         os.makedirs(truth_dir, exist_ok=True)
 
-        dsm_dir = os.path.join(dfc_dir, "Track3-Truth/")
+        dsm_dir = os.path.join(dfc_dir, "Truth/")
         DSMTxtFile = dsm_dir + aoi_id + '_DSM.txt'
         DSMFile = dsm_dir + aoi_id + '_DSM.tif'
         shutil.copyfile(DSMTxtFile, truth_dir + os.path.basename(DSMTxtFile))
@@ -268,7 +268,7 @@ def create_satellite_dataset(aoi_id, dfc_dir, output_dir, mode='train', ba=True,
             crop_geotiff_lonlat_aoi(geotiff_path, out_crop_path, aoi_lonlat)
         img_dir = crops_dir
     else:
-        img_dir = os.path.join(dfc_dir, "Track3-RGB/{}".format(aoi_id))
+        img_dir = os.path.join(dfc_dir, "RGB/{}".format(aoi_id))
     if ba:
         run_ba(img_dir, output_dir)
     json_dir = create_dataset_from_DFC2019_data(nerf_dir, aoi_id, img_dir, dfc_dir, output_dir, use_ba=ba)
