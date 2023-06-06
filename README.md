@@ -17,10 +17,10 @@ The following steps are compulsory for running this repository:
 git clone https://github.com/LulinZhang/SpS-NeRF.git
 ```
 
-2. Create virtualenv `satnerf`
+2. Create virtualenv `spsnerf`
 ```
 conda init
-bash -i setup_satnerf_env.sh
+bash -i setup_spsnerf_env.sh
 ```
 
 ### Optional
@@ -33,8 +33,9 @@ bash -i setup_ba_env.sh
 ## 1. Prepare dataset
 You can skip this step and directly download the [DFC2019 dataset AOI 214](https://drive.google.com/file/d/1LXfkxe_d3WSVgxK5y8q4Si-sUF6Fvv-R/view?usp=sharing).
 
-### Organize your data
+*You need to prepare a directory `ProjDir` to place the dataset.*
 
+### Organize your data
 
 ### Refine RPC with bundle adjustment
 ```
@@ -48,14 +49,16 @@ python3 create_satellite_dataset.py --aoi_id "$aoi_id" --dfc_dir "$DataDir" --ou
 *Please replace the value of `DataDir` and `OutputDir` in the second and third lines in the above script to your own value.*
 
 ### Generate dense depth
-In our experiments, this step is done with the free, open-source photogrammetry software `MicMac`, you need to install MicMac following [this websit](https://github.com/micmacIGN/micmac).
+You can skip this step and directly download the [Dense depth of DFC2019 dataset AOI 214](https://drive.google.com/file/d/1L7PmSCaNvQGtk6mNyfufp3z8hbzSNiQM/view?usp=sharing) and put it in your `TxtDenseDir`.
 
+#### Option 1: Use software MicMac
+In our experiments, this step is done with the free, open-source photogrammetry software `MicMac`, you need to install MicMac following [this websit](https://github.com/micmacIGN/micmac).
 ```
 aoi_id=JAX_214
-DataDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/DFC2019/
 RootDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/JAX_214_2_imgs/
-MicMacDenseDir="$RootDir"DenseDepth/
 TxtDenseDir="$RootDir"dataset"$aoi_id"/root_dir/crops_rpcs_ba_v2/"$aoi_id"/DenseDepth_ZM4/
+MicMacDenseDir="$RootDir"DenseDepth/
+DataDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/DFC2019/
 CodeDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/code/SpS-NeRF/
 
 mkdir "$MicMacDenseDir"
@@ -81,14 +84,25 @@ mm3d TestLib GeoreferencedDepthMap MM-"$aoi_id"_009_RGB_ZM4 "$aoi_id"_009_RGB.ti
 mm3d TestLib GeoreferencedDepthMap MM-"$aoi_id"_010_RGB_ZM4 "$aoi_id"_010_RGB.tif Ori-RPC-d0-adj OutDir="$TxtDenseDir" Mask=1 Scale=4
 
 cd "$CodeDir"
+#Transform 3D points from UTM to geocentric coordinates.
 python3 utm_to_ecef.py --file_dir "$TxtDenseDir"
 ```
 
-*You need to prepare a directory `ProjDir` to place the dataset.*
+*Please replace the values from first to sixth lines in the above script to your own value.*
+
+#### Option 2: Use other software
+It is also possible if you prefer to use other software, just make sure your final result is organized this way:
+- `TxtDenseDir`
+  - `ImageName_2DPts.txt`: 2D coordinate in image frame for the pixels with valid depth value. The first line is width, and the second line is height.
+  - `ImageName_3DPts.txt`: 3D coordinate in UTM for the pixels with valid depth value.
+  - `ImageName_3DPts_ecef.txt`: 3D coordinate in geocentric coordinates for the pixels with valid depth value.
+  - `ImageName_Correl.txt`: correlation score for the pixels with valid depth value.
+
+Each image `ImageName` corresponds to four txt files as displayed below.
 
 ## 2. Train SpS-NeRF
 ```
-conda activate satnerf
+conda activate spsnerf
 ProjDir=/gpfs/users/lzhang/SpS-NeRF_test/
 exp_name=SpS_output"$aoi_id"-"$inputdds"-FnMd"$n_importance"-ds"$ds_lambda"-"$stdscale"
 Output="$ProjDir"/"$exp_name"
@@ -109,28 +123,28 @@ python3 main.py --aoi_id "$aoi_id" --model sps-nerf --exp_name "$exp_name" --roo
 ## 3. Test SpS-NeRF
 ### Render novel views
 ```
-conda activate satnerf
+conda activate spsnerf
 Output=/gpfs/users/lzhang/SatNeRFProj/DFCDataClean_2imgs/SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1/
 logs_dir="$Output"/logs
 run_id=SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1
-output_dir="$Output"/eval_satnerf
+output_dir="$Output"/eval_spsnerf
 epoch_number=28
 
-python3 eval_satnerf.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_dir" --epoch_number "$epoch_number" --split val
+python3 eval_spsnerf.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_dir" --epoch_number "$epoch_number" --split val
 ```
 
 *Please replace the value of `Output`, `run_id`, `output_dir` and `epoch_number` in the above script to your own settings.*
 
 ### Generate DSM (Digital Surface Model)
 ```
-conda activate satnerf
+conda activate spsnerf
 Output=/gpfs/users/lzhang/SatNeRFProj/DFCDataClean_2imgs/SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1/
 logs_dir="$Output"/logs
 run_id=SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1
-output_dir="$Output"/create_satnerf_dsm
+output_dir="$Output"/create_spsnerf_dsm
 epoch_number=28
 
-python3.6 ../../code/SpS-NeRF/create_satnerf_dsm.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_dir" --epoch_number "$epoch_number"
+python3.6 ../../code/SpS-NeRF/create_spsnerf_dsm.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_dir" --epoch_number "$epoch_number"
 ```
 
 *Please replace the value of `Output`, `run_id`, `output_dir` and `epoch_number` in the above script to your own settings.*
