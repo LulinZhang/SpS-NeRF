@@ -35,9 +35,7 @@ You can skip this step and directly download the [DFC2019 dataset AOI 214](https
 
 *You need to prepare a directory `ProjDir` to place the dataset.*
 
-### Organize your data
-
-### Refine RPC with bundle adjustment
+### 1.1. Refine RPC with bundle adjustment
 ```
 conda activate ba
 DataDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/DFC2019/
@@ -48,11 +46,11 @@ python3 create_satellite_dataset.py --aoi_id "$aoi_id" --dfc_dir "$DataDir" --ou
 
 *Please replace the value of `DataDir` and `OutputDir` in the second and third lines in the above script to your own value.*
 
-### Generate dense depth
+### 1.2. Generate dense depth
 You can skip this step and directly download the [Dense depth of DFC2019 dataset AOI 214](https://drive.google.com/file/d/1L7PmSCaNvQGtk6mNyfufp3z8hbzSNiQM/view?usp=sharing) and put it in your `TxtDenseDir`.
 
 #### Option 1: Use software MicMac
-In our experiments, this step is done with the free, open-source photogrammetry software `MicMac`, you need to install MicMac following [this websit](https://github.com/micmacIGN/micmac).
+In our experiments, this step is done with the free, open-source photogrammetry software `MicMac`. You need to install MicMac following [this websit](https://github.com/micmacIGN/micmac).
 ```
 aoi_id=JAX_214
 RootDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/JAX_214_2_imgs/
@@ -85,7 +83,7 @@ mm3d TestLib GeoreferencedDepthMap MM-"$aoi_id"_010_RGB_ZM4 "$aoi_id"_010_RGB.ti
 
 cd "$CodeDir"
 #Transform 3D points from UTM to geocentric coordinates.
-python3 utm_to_ecef.py --file_dir "$TxtDenseDir"
+python3 utm_to_geocentric.py --file_dir "$TxtDenseDir"
 ```
 
 *Please replace the values from first to sixth lines in the above script to your own value.*
@@ -121,7 +119,7 @@ python3 main.py --aoi_id "$aoi_id" --model sps-nerf --exp_name "$exp_name" --roo
 *Please replace the value of `ProjDir` in the second line in the above script to your own `ProjDir`.*
 
 ## 3. Test SpS-NeRF
-### Render novel views
+### 3.1. Render novel views
 ```
 conda activate spsnerf
 Output=/gpfs/users/lzhang/SatNeRFProj/DFCDataClean_2imgs/SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1/
@@ -130,12 +128,12 @@ run_id=SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1
 output_dir="$Output"/eval_spsnerf
 epoch_number=28
 
-python3 eval_spsnerf.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_dir" --epoch_number "$epoch_number" --split val
+python3 eval.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_dir" --epoch_number "$epoch_number" --split val
 ```
 
 *Please replace the value of `Output`, `run_id`, `output_dir` and `epoch_number` in the above script to your own settings.*
 
-### Generate DSM (Digital Surface Model)
+### 3.2. Generate DSM (Digital Surface Model)
 ```
 conda activate spsnerf
 Output=/gpfs/users/lzhang/SatNeRFProj/DFCDataClean_2imgs/SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1/
@@ -144,7 +142,7 @@ run_id=SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1
 output_dir="$Output"/create_spsnerf_dsm
 epoch_number=28
 
-python3.6 ../../code/SpS-NeRF/create_spsnerf_dsm.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_dir" --epoch_number "$epoch_number"
+python3.6 ../../code/SpS-NeRF/create_dsm.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_dir" --epoch_number "$epoch_number"
 ```
 
 *Please replace the value of `Output`, `run_id`, `output_dir` and `epoch_number` in the above script to your own settings.*
