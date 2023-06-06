@@ -40,15 +40,29 @@ You can skip this step and directly download the [DFC2019 dataset AOI 214](https
 ### Organize your data
 
 
-### Bundle adjustment
+### Refine RPC with bundle adjustment
 ```
 conda activate ba
 input_dir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/DFC2019/
 output_dir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/
-python3 create_satellite_dataset.py --aoi_id JAX_214 --dfc_dir "$input_dir" --output_dir "$output_dir" 
+aoi_id=JAX_214
+python3 create_satellite_dataset.py --aoi_id "$aoi_id" --dfc_dir "$input_dir" --output_dir "$output_dir" 
 ```
 
 *Please replace the value of `input_dir` and `output_dir` in the second and third lines in the above script to your own value.*
+
+### Generate dense depth
+In our experiments, this step is done with the free, open-source photogrammetry software [MicMac](https://github.com/micmacIGN/micmac).
+#### Copy images and refined rpc parameters
+```
+aoi_id=JAX_214
+RootDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/JAX_214_2_imgs/
+
+mkdir "$RootDir"DenseDepth
+
+```
+
+
 
 *Codes for preparing dataset are coming soon.*
 
