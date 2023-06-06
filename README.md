@@ -1,8 +1,8 @@
 # SpS-NeRF
 
-### [[Project page]](https://erupnik.github.io/SparseSatNerf.html)
+### [Project page](https://erupnik.github.io/SparseSatNerf.html)
 
-### [SparseSat-NeRF: Dense Depth Supervised Neural Radiance Fields for Sparse Satellite Images]
+### [SparseSat-NeRF: Dense Depth Supervised Neural Radiance Fields for Sparse Satellite Images](https://blank)
 *[Lulin Zhang](https://scholar.google.com/citations?user=tUebgRIAAAAJ&hl=fr&oi=ao),
 [Ewelina Rupnik](https://erupnik.github.io/)*
 
