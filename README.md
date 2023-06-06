@@ -2,15 +2,11 @@
 
 ### [[Project page]](https://erupnik.github.io/SparseSatNerf.html)
 
-This work is accepted at the [ISPRS Annals 2023](https://gsw2023.com/).
-
 ### [SparseSat-NeRF: Dense Depth Supervised Neural Radiance Fields for Sparse Satellite Images]
 *[Lulin Zhang](https://scholar.google.com/citations?user=tUebgRIAAAAJ&hl=fr&oi=ao),
 [Ewelina Rupnik](https://erupnik.github.io/)*
 
 ![](documents/teaser.png)
-
-> **Abstract:** *Digital surface model generation using traditional multi-view stereo matching (MVS) performs poorly over non-Lambertian surfaces, with asynchronous acquisitions, or at discontinuities. Neural radiance fields (NeRF) offer a new paradigm for reconstructing surface geometries using continuous volumetric representation. NeRF is self-supervised, does not require ground truth geometry for training, and provides an elegant way to include in its representation physical parameters about the scene, thus potentially remedying the challenging scenarios where MVS fails. However, NeRF and its variants require many views to produce convincing scene’s geometries which in earth observation satellite imaging is rare. In this paper we present SparseSat-NeRF (SpS-NeRF) – an extension of Sat-NeRF adapted to sparse satellite views. SpS-NeRF employs dense depth supervision guided by cross-correlation similarity metric provided by traditional semi-global MVS matching. We demonstrate the effectiveness of our approach on stereo and tri-stereo Pleiades 1B/WorldView-3 images, and compare against NeRF and Sat-NeRF.*
 
 
 ## Setup
@@ -43,28 +39,50 @@ You can skip this step and directly download the [DFC2019 dataset AOI 214](https
 ### Refine RPC with bundle adjustment
 ```
 conda activate ba
-input_dir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/DFC2019/
-output_dir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/
+DataDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/DFC2019/
+OutputDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/
 aoi_id=JAX_214
-python3 create_satellite_dataset.py --aoi_id "$aoi_id" --dfc_dir "$input_dir" --output_dir "$output_dir" 
+python3 create_satellite_dataset.py --aoi_id "$aoi_id" --dfc_dir "$DataDir" --output_dir "$OutputDir" 
 ```
 
-*Please replace the value of `input_dir` and `output_dir` in the second and third lines in the above script to your own value.*
+*Please replace the value of `DataDir` and `OutputDir` in the second and third lines in the above script to your own value.*
 
 ### Generate dense depth
-In our experiments, this step is done with the free, open-source photogrammetry software [MicMac](https://github.com/micmacIGN/micmac).
-#### Copy images and refined rpc parameters
+In our experiments, this step is done with the free, open-source photogrammetry software `MicMac`, you need to install MicMac following [this websit](https://github.com/micmacIGN/micmac).
+
 ```
 aoi_id=JAX_214
+DataDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/DFC2019/
 RootDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/JAX_214_2_imgs/
+MicMacDenseDir="$RootDir"DenseDepth/
+TxtDenseDir="$RootDir"dataset"$aoi_id"/root_dir/crops_rpcs_ba_v2/"$aoi_id"/DenseDepth_ZM4/
+CodeDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/code/SpS-NeRF/
 
-mkdir "$RootDir"DenseDepth
+mkdir "$MicMacDenseDir"
+mkdir "$TxtDenseDir"
 
+#copy the images and refined rpc parameters
+cp "$RootDir"dataset"$aoi_id"/DFC2019/RGB-crops/"$aoi_id"/"$aoi_id"_009_RGB.tif "$MicMacDenseDir""$aoi_id"_009_RGB.tif
+cp "$RootDir"dataset"$aoi_id"/DFC2019/RGB-crops/"$aoi_id"/"$aoi_id"_010_RGB.tif "$MicMacDenseDir""$aoi_id"_010_RGB.tif
+cp "$RootDir"ba_files/rpcs_adj/"$aoi_id"_009_RGB.rpc_adj "$MicMacDenseDir""$aoi_id"_009_RGB.txt
+cp "$RootDir"ba_files/rpcs_adj/"$aoi_id"_010_RGB.rpc_adj "$MicMacDenseDir""$aoi_id"_010_RGB.txt
+cp "$DataDir"WGS84toUTM.xml "$MicMacDenseDir"WGS84toUTM.xml
+cd "$MicMacDenseDir"
+
+#convert rpc to the MicMac format
+mm3d Convert2GenBundle "(.*).tif" "\$1.txt" RPC-d0-adj ChSys=WGS84toUTM.xml Degre=0
+
+#generate dense depth in tif format
+mm3d Malt GeomImage "JAX.*tif" RPC-d0-adj Master="$aoi_id"_010_RGB.tif SzW=1 Regul=0.05 NbVI=2 ZoomF=4 ResolTerrain=1 EZA=1 DirMEC=MM-"$aoi_id"_010_RGB_ZM4/ 
+mm3d Malt GeomImage "JAX.*tif" RPC-d0-adj Master="$aoi_id"_009_RGB.tif SzW=1 Regul=0.05 NbVI=2 ZoomF=4 ResolTerrain=1 EZA=1 DirMEC=MM-"$aoi_id"_009_RGB_ZM4/ 
+
+#convert dense depth tif to txt format
+mm3d TestLib GeoreferencedDepthMap MM-"$aoi_id"_009_RGB_ZM4 "$aoi_id"_009_RGB.tif Ori-RPC-d0-adj OutDir="$TxtDenseDir" Mask=1 Scale=4
+mm3d TestLib GeoreferencedDepthMap MM-"$aoi_id"_010_RGB_ZM4 "$aoi_id"_010_RGB.tif Ori-RPC-d0-adj OutDir="$TxtDenseDir" Mask=1 Scale=4
+
+cd "$CodeDir"
+python3 utm_to_ecef.py --file_dir "$TxtDenseDir"
 ```
-
-
-
-*Codes for preparing dataset are coming soon.*
 
 *You need to prepare a directory `ProjDir` to place the dataset.*
 
