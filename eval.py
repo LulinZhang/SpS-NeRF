@@ -286,7 +286,7 @@ def eval_aoi(run_id, logs_dir, output_dir, epoch_number, split, checkpoints_dir=
     print("Mean SSIM: {:.3f}".format(np.mean(np.array(ssim))))
     print("Mean MAE: {:.3f}\n".format(np.mean(np.array(mae))))
 
-    print('eval_satnerf finished !')
+    print('eval finished !')
 
 if __name__ == '__main__':
     args = Test_parser()

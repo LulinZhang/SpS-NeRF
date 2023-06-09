@@ -244,6 +244,8 @@ class SatelliteRGBDEPDataset(Dataset):
         all_deprays, all_depths, all_sun_dirs, all_weights = [], [], [], []
         all_depth_stds = []
         all_valid_depth = []
+        depth_min = 0
+        depth_max = 0
 
         for t, json_p in enumerate(json_files):
             # read json
@@ -288,14 +290,23 @@ class SatelliteRGBDEPDataset(Dataset):
 
             # compute depths
             depths = torch.linalg.norm(pts3d - rays[:, :3], axis=1)
+            print('center, range: ', self.center, self.range)
             current_weights = torch.from_numpy(current_weights).type(torch.FloatTensor)
             current_depth_std = self.stdscale*(torch.ones_like(current_weights) - current_weights) + torch.ones_like(current_weights)*self.margin
+            cur_depth_min, cur_depth_max = torch.min(depths), torch.max(depths)
+            if(t==0):
+                depth_min, depth_max = cur_depth_min, cur_depth_max
+            else:
+                if(cur_depth_min < depth_min):
+                    depth_min = cur_depth_min
+                if(cur_depth_max > depth_max):
+                    depth_max = cur_depth_max
             print("Depth {} loaded ( {} / {} )".format(img_id, t + 1, len(json_files)))
-            print('depth range: [{:.2f}, {:.2f}], mean: {:.2f}'.format(torch.min(depths), torch.max(depths), torch.mean(depths)))            
-            print('corr  range: [{:.2f}, {:.2f}], mean: {:.2f}'.format(torch.min(current_weights), torch.max(current_weights), torch.mean(current_weights)))            
-            print('std   range: [{:.2f}, {:.2f}], mean: {:.2f}'.format(torch.min(current_depth_std), torch.max(current_depth_std), torch.mean(current_depth_std)))
+            print('depth range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(depths), torch.max(depths), torch.mean(depths)))            
+            print('corr  range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(current_weights), torch.max(current_weights), torch.mean(current_weights)))            
+            print('std   range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(current_depth_std), torch.max(current_depth_std), torch.mean(current_depth_std)))
 
-            print('{:.2f} percent of pixels are valid in depth map.'.format(depths.shape[0]*100.0/height/width))
+            print('{:.5f} percent of pixels are valid in depth map.'.format(depths.shape[0]*100.0/height/width))
 
             densedepth_file = depth_dir+img_id+"_3DPts.txt"
             cal_rmse_depth(densedepth_file, self.gt_dir, self.aoi_id)
@@ -319,11 +330,17 @@ class SatelliteRGBDEPDataset(Dataset):
         all_valid_depth = torch.cat(all_valid_depth, 0)
         all_deprays = torch.cat(all_deprays, 0)  # (len(json_files)*h*w, 8)
         all_depths = torch.cat(all_depths, 0)  # (len(json_files)*h*w, 1)
+        print('depth_min, depth_max: ', depth_min, depth_max)
+        print('all_depths range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(all_depths), torch.max(all_depths), torch.mean(all_depths)))
         all_weights = torch.cat(all_weights, 0)
         all_depth_stds = torch.cat(all_depth_stds, 0)
+        print('all_depth_stds range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(all_depth_stds), torch.max(all_depth_stds), torch.mean(all_depth_stds)))
+        all_depth_stds = all_depth_stds*(depth_max-depth_min)
+        print('all_depth_stds range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(all_depth_stds), torch.max(all_depth_stds), torch.mean(all_depth_stds)))
         all_depths = torch.hstack([all_depths, all_weights])  # (len(json_files)*h*w, 11)
         all_deprays = all_deprays.type(torch.FloatTensor)
         all_depths = all_depths.type(torch.FloatTensor)
+
 
         return all_deprays, all_depths, all_valid_depth, all_depth_stds
 
@@ -334,8 +351,8 @@ class SatelliteRGBDEPDataset(Dataset):
         rays[:, 0] /= self.range
         rays[:, 1] /= self.range
         rays[:, 2] /= self.range
-        rays[:, 6] /= self.range
-        rays[:, 7] /= self.range
+        rays[:, 6] /= self.range    #near of the ray
+        rays[:, 7] /= self.range    #far of the ray
         return rays
 
     def get_sun_dirs(self, sun_elevation_deg, sun_azimuth_deg, n_rays):

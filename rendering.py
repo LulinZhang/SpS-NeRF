@@ -62,7 +62,7 @@ def sample_3sigma(low_3sigma, high_3sigma, N, det, near, far, device=None, gt=Fa
 def compute_samples_around_depth(res, N_samples, z_vals, perturb, near, far, device=None):
     pred_depth = res['depth']
     pred_weight = res['weights']
-    sampling_std = ((z_vals - pred_depth.unsqueeze(-1)).pow(2) * pred_weight).sum(-1) + 1e-5
+    sampling_std = (((z_vals - pred_depth.unsqueeze(-1)).pow(2) * pred_weight).sum(-1)).sqrt()
 
     depth_min = pred_depth - 3. * sampling_std
     depth_max = pred_depth + 3. * sampling_std

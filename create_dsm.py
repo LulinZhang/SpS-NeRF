@@ -9,7 +9,7 @@ import rasterio
 
 from datasets import SatelliteDataset
 import sat_utils
-from eval_satnerf import load_nerf, batched_inference, save_nerf_output_to_images, predefined_val_ts
+from eval import load_nerf, batched_inference, save_nerf_output_to_images, predefined_val_ts
 
 import warnings
 warnings.filterwarnings("ignore")

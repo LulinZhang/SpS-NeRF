@@ -88,49 +88,54 @@ class DepthLoss(torch.nn.Module):
 
     def forward(self, inputs, targets, weights=1., target_valid_depth=None, target_std=None):
 
-        def is_not_in_expected_distribution(depth_mean, depth_var, depth_measurement_mean, depth_measurement_std):
-            delta_greater_than_expected = ((depth_mean - depth_measurement_mean).abs() - depth_measurement_std) > 0.
-            var_greater_than_expected = depth_measurement_std.pow(2) < depth_var
-            return torch.logical_or(delta_greater_than_expected, var_greater_than_expected)
+        def is_not_in_expected_distribution(pred_depth, pred_std, target_depth, target_std):
+            depth_greater_than_expected = ((pred_depth - target_depth).abs() - target_std) > 0.
+            std_greater_than_expected = target_std < pred_std
+            return torch.logical_or(depth_greater_than_expected, std_greater_than_expected)
 
-        def ComputeSubsetDepthLoss(inputs, typ, target_mean, target_weight, target_valid_depth, target_std):
+        def ComputeSubsetDepthLoss(inputs, typ, target_depth, target_weight, target_valid_depth, target_std):
             if target_valid_depth == None:
-                print('target_valid_depth is None! Use all the target_depth by default! target_mean.shape[0]', target_mean.shape[0])
-                target_valid_depth = torch.ones(target_mean.shape[0])
+                print('target_valid_depth is None! Use all the target_depth by default! target_depth.shape[0]', target_depth.shape[0])
+                target_valid_depth = torch.ones(target_depth.shape[0])
             z_vals = inputs[f'z_vals_{typ}'][np.where(target_valid_depth.cpu()>0)]
-            pred_mean = inputs[f'depth_{typ}'][np.where(target_valid_depth.cpu()>0)]
+            pred_depth = inputs[f'depth_{typ}'][np.where(target_valid_depth.cpu()>0)]
 
             pred_weight = inputs[f'weights_{typ}'][np.where(target_valid_depth.cpu()>0)]
-            if pred_mean.shape[0] == 0:
+            if pred_depth.shape[0] == 0:
                 print('ZERO target_valid_depth in this depth loss computation! target_weight.device: ', target_weight.device)
                 return torch.zeros((1,), device=target_weight.device, requires_grad=True)
 
-            pred_var = ((z_vals - pred_mean.unsqueeze(-1)).pow(2) * pred_weight).sum(-1) + 1e-5
+            pred_std = (((z_vals - pred_depth.unsqueeze(-1)).pow(2) * pred_weight).sum(-1)).sqrt()
             target_weight = target_weight[np.where(target_valid_depth.cpu()>0)]
-            target_mean = target_mean[np.where(target_valid_depth.cpu()>0)]
+            target_depth = target_depth[np.where(target_valid_depth.cpu()>0)]
             target_std = target_std[np.where(target_valid_depth.cpu()>0)]
             #target_std = self.stdscale*(torch.ones_like(target_weight) - target_weight) + torch.ones_like(target_weight)*self.margin
 
-            apply_depth_loss = torch.ones(target_mean.shape[0])
+            apply_depth_loss = torch.ones(target_depth.shape[0])
             if self.usealldepth == False:
-                apply_depth_loss = is_not_in_expected_distribution(pred_mean, pred_var, target_mean, target_std)
+                apply_depth_loss = is_not_in_expected_distribution(pred_depth, pred_std, target_depth, target_std)
 
-            pred_mean = pred_mean[apply_depth_loss]
-            if pred_mean.shape[0] == 0:
+            print('pred_depth range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(pred_depth), torch.max(pred_depth), torch.mean(pred_depth)))            
+            print('pred_std range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(pred_std), torch.max(pred_std), torch.mean(pred_std)))            
+            print('target_depth range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(target_depth), torch.max(target_depth), torch.mean(target_depth)))            
+            print('target_std range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(target_std), torch.max(target_std), torch.mean(target_std)))            
+
+            pred_depth = pred_depth[apply_depth_loss]
+            if pred_depth.shape[0] == 0:
                 print('ZERO apply_depth_loss in this depth loss computation!')
                 return torch.zeros((1,), device=target_weight.device, requires_grad=True)
 
-            pred_var = pred_var[apply_depth_loss]
-            target_mean = target_mean[apply_depth_loss]
+            pred_std = pred_std[apply_depth_loss]
+            target_depth = target_depth[apply_depth_loss]
 
-            numerator = float(pred_mean.shape[0])
+            numerator = float(pred_depth.shape[0])
             denominator = float(target_valid_depth.shape[0])
 
             if self.GNLL == True:   
-                loss = numerator/denominator*self.loss(pred_mean, target_mean, pred_var)
+                loss = numerator/denominator*self.loss(pred_depth, target_depth, pred_std)
                 return loss
             else:
-                loss = numerator/denominator*target_weight[apply_depth_loss]*self.loss(pred_mean, target_mean)
+                loss = numerator/denominator*target_weight[apply_depth_loss]*self.loss(pred_depth, target_depth)
                 return loss
 
 

@@ -20,7 +20,7 @@ import numpy as np
 import datetime
 from sat_utils import compute_mae_and_save_dsm_diff
 
-from eval_satnerf import find_best_embbeding_for_val_image, save_nerf_output_to_images, predefined_val_ts
+from eval import find_best_embbeding_for_val_image, save_nerf_output_to_images, predefined_val_ts
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
 
