@@ -240,6 +240,11 @@ class SatelliteRGBDEPDataset(Dataset):
         
         return all_rays, all_rgbs, all_ids
 
+    def scale_depth(self, feature, height, width, depth=1):
+        new_height, new_width = int(height/self.img_downscale), int(width/self.img_downscale)
+        new_feature = torch.nn.functional.interpolate(feature.reshape(1, 1, height, width, depth), size=(new_height, new_width, depth))     #, mode='bilinear')
+        return new_feature.squeeze().reshape(new_height*new_width, depth).squeeze()
+
     def load_depth_data(self, json_files, depth_dir, verbose=False):
         all_deprays, all_depths, all_sun_dirs, all_weights = [], [], [], []
         all_depth_stds = []
@@ -272,6 +277,7 @@ class SatelliteRGBDEPDataset(Dataset):
             current_weights = self.corrscale*current_weights
 
             rpc = sat_utils.rescale_rpc(rpcm.RPCModel(d["rpc"], dict_format="rpcm"), 1.0 / self.img_downscale)
+            pts2d = pts2d / self.img_downscale
 
             # build the sparse batch of rays for depth supervision
             cols, rows = pts2d.T
@@ -311,16 +317,24 @@ class SatelliteRGBDEPDataset(Dataset):
             densedepth_file = depth_dir+img_id+"_3DPts.txt"
             cal_rmse_depth(densedepth_file, self.gt_dir, self.aoi_id)
 
-
             depths_padded = torch.zeros(height*width)
             depths_padded[np.where(valid_depth>0)[0]] = depths
+            depths_padded = self.scale_depth(depths_padded, height, width)
+            
             weights_padded = torch.zeros(height*width)
             weights_padded[np.where(valid_depth>0)[0]] = current_weights
+            weights_padded = self.scale_depth(weights_padded, height, width)
+            
             depth_std_padded = torch.zeros(height*width)
             depth_std_padded[np.where(valid_depth>0)[0]] = current_depth_std
+            depth_std_padded = self.scale_depth(depth_std_padded, height, width)
+            
             rays_padded = torch.zeros(height*width, 8)
             rays_padded[np.where(valid_depth>0)[0],:] = rays
-
+            rays_padded = self.scale_depth(rays_padded, height, width, 8)
+            
+            valid_depth = self.scale_depth(valid_depth, height, width)
+            
             all_valid_depth += [valid_depth]
             all_depths += [depths_padded[:, np.newaxis]]
             all_weights += [weights_padded[:, np.newaxis]]
