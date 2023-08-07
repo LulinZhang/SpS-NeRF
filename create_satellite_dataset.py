@@ -180,8 +180,10 @@ def read_DFC2019_lonlat_aoi(aoi_id, dfc_dir):
     from bundle_adjust import geo_utils
     if aoi_id[:3] == "JAX":
         zonestring = "17" #"17R"
+    elif aoi_id[:3] == "Dji":
+        zonestring = "38" #"38N"
     else:
-        raise ValueError("AOI not valid. Expected JAX_(3digits) but received {}".format(aoi_id))
+        raise ValueError("AOI not valid. Expected JAX_xxx or Dji_xxx but received {}".format(aoi_id))
     roi = np.loadtxt(os.path.join(dfc_dir, "Truth/" + aoi_id + "_DSM.txt"))
 
     xoff, yoff, xsize, ysize, resolution = roi[0], roi[1], int(roi[2]), int(roi[2]), roi[3]
@@ -227,7 +229,8 @@ def create_satellite_dataset(aoi_id, dfc_dir, output_dir, mode='train', ba=True,
         aoi_lonlat = read_DFC2019_lonlat_aoi(aoi_id, dfc_dir)
         img_dir = os.path.join(dfc_dir, "RGB/{}".format(aoi_id))
         #myimages = sorted(glob.glob(img_dir + "/*.tif"))
-        train_imgs = np.loadtxt(args.dfc_dir + '/train.txt', dtype='str')
+        with open(os.path.join(args.dfc_dir + '/train.txt'), "r") as f:
+            train_imgs = f.read().split("\n")[:-1]
 
         subdir = aoi_id + '_' + str(len(train_imgs)) + '_imgs'
         myimages = []
@@ -235,9 +238,10 @@ def create_satellite_dataset(aoi_id, dfc_dir, output_dir, mode='train', ba=True,
              myimages.append(img[:-5]+'.tif')
         if mode == 'test':
             subdir += '_tmp'
-            test_imgs = np.loadtxt(args.dfc_dir + '/test.txt', dtype='str')
+            with open(os.path.join(args.dfc_dir + '/test.txt'), "r") as f:
+                test_imgs = f.read().split("\n")[:-1]
             for img in test_imgs:
-                 myimages.append(img[:-5]+'.tif')
+                myimages.append(img[:-5]+'.tif')
         print('image list of {} mode:\n{}'.format(mode, myimages))
         output_dir = output_dir + subdir + '/'
         os.makedirs(output_dir, exist_ok=True)
@@ -245,7 +249,7 @@ def create_satellite_dataset(aoi_id, dfc_dir, output_dir, mode='train', ba=True,
         crops_dir = os.path.join(output_dir, "dataset"+aoi_id+"/")
         nerf_dir = crops_dir
         os.makedirs(crops_dir, exist_ok=True)
-        crops_dir = os.path.join(crops_dir, "DFC2019/")
+        crops_dir = os.path.join(crops_dir, aoi_id+"/")
         os.makedirs(crops_dir, exist_ok=True)
 
         truth_dir = os.path.join(crops_dir, "Truth/")
@@ -307,7 +311,8 @@ if __name__ == '__main__':
     #run bundle adjustment with training and testing images validation
     dir_test, img_dir_test, json_dir_test = create_satellite_dataset(args.aoi_id, args.dfc_dir, args.output_dir, 'test')
 
-    test_imgs = np.loadtxt(args.dfc_dir + '/test.txt', dtype='str')
+    with open(os.path.join(args.dfc_dir + '/test.txt'), "r") as f:
+        test_imgs = f.read().split("\n")[:-1]
     for test_img in test_imgs:
         shutil.copyfile(img_dir_test + '/' + test_img[:-5] + '.tif', img_dir_train + '/' + test_img[:-5] + '.tif')
         shutil.copyfile(json_dir_test + '/' + test_img, json_dir_train + '/' + test_img)
