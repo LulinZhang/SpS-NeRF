@@ -46,6 +46,8 @@ python3 create_satellite_dataset.py --aoi_id "$aoi_id" --dfc_dir "$DataDir" --ou
 
 *Please replace the value of `DataDir` and `OutputDir` in the second and third lines in the above script to your own value.*
 
+In your `DataDir`, it should contain the RGB images, ground truth DSM and other text files to indicate necessary information. Please refer to [our example](https://drive.google.com/file/d/1kVuEKONJamt1R9caxY-zJFVQXgbiQDsM/view?usp=sharing) for file organization.
+
 ### 1.2. Generate dense depth
 You can skip this step and directly download the [Dense depth of DFC2019 dataset AOI 214](https://drive.google.com/file/d/1L7PmSCaNvQGtk6mNyfufp3z8hbzSNiQM/view?usp=sharing) and put it in your `TxtDenseDir`.
 
