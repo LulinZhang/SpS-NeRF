@@ -36,15 +36,16 @@ You can skip this step and directly download the [DFC2019 dataset AOI 214](https
 *You need to prepare a directory `ProjDir` to place the dataset.*
 
 ### 1.1. Refine RPC with bundle adjustment
+Please use command `conda activate ba` to get into the `ba` environment for this step.
 ```
-conda activate ba
-DataDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/DFC2019/
-OutputDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/
+BaseDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/
 aoi_id=JAX_214
+DataDir="$BaseDir"DFC2019/
+OutputDir="$BaseDir"
 python3 create_satellite_dataset.py --aoi_id "$aoi_id" --dfc_dir "$DataDir" --output_dir "$OutputDir" 
 ```
 
-*Please replace the value of `DataDir` and `OutputDir` in the second and third lines in the above script to your own value.*
+*Please replace the values from first to third lines in the above script to your own value.*
 
 In your `DataDir`, it should contain the RGB images, ground truth DSM and other text files to indicate necessary information. Please refer to [our example](https://drive.google.com/file/d/1kVuEKONJamt1R9caxY-zJFVQXgbiQDsM/view?usp=sharing) for file organization.
 
@@ -55,40 +56,43 @@ You can skip this step and directly download the [Dense depth of DFC2019 dataset
 In our experiments, this step is done with the free, open-source photogrammetry software `MicMac`. You need to install MicMac following [this websit](https://github.com/micmacIGN/micmac).
 ```
 aoi_id=JAX_214
-RootDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/JAX_214_2_imgs/
+DataDir="$BaseDir"DFC2019/
+RootDir="$BaseDir"JAX_214_2_imgs/
 TxtDenseDir="$RootDir"dataset"$aoi_id"/root_dir/crops_rpcs_ba_v2/"$aoi_id"/DenseDepth_ZM4/
 MicMacDenseDir="$RootDir"DenseDepth/
-DataDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/DFC2019/
 CodeDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/code/SpS-NeRF/
 
 mkdir "$MicMacDenseDir"
 mkdir "$TxtDenseDir"
 
 #copy the images and refined rpc parameters
-cp "$RootDir"dataset"$aoi_id"/DFC2019/RGB-crops/"$aoi_id"/"$aoi_id"_009_RGB.tif "$MicMacDenseDir""$aoi_id"_009_RGB.tif
-cp "$RootDir"dataset"$aoi_id"/DFC2019/RGB-crops/"$aoi_id"/"$aoi_id"_010_RGB.tif "$MicMacDenseDir""$aoi_id"_010_RGB.tif
-cp "$RootDir"ba_files/rpcs_adj/"$aoi_id"_009_RGB.rpc_adj "$MicMacDenseDir""$aoi_id"_009_RGB.txt
-cp "$RootDir"ba_files/rpcs_adj/"$aoi_id"_010_RGB.rpc_adj "$MicMacDenseDir""$aoi_id"_010_RGB.txt
+for line in `cat "$DataDir"train.txt`
+do
+	img_name=${line%.*}
+	cp "$DataDir"RGB/"$aoi_id"/"$img_name".tif "$MicMacDenseDir""$img_name".tif
+	cp "$RootDir"ba_files/rpcs_adj/"$img_name".rpc_adj "$MicMacDenseDir""$img_name".txt
+done
 cp "$DataDir"WGS84toUTM.xml "$MicMacDenseDir"WGS84toUTM.xml
 cd "$MicMacDenseDir"
 
 #convert rpc to the MicMac format
 mm3d Convert2GenBundle "(.*).tif" "\$1.txt" RPC-d0-adj ChSys=WGS84toUTM.xml Degre=0
 
-#generate dense depth in tif format
-mm3d Malt GeomImage "JAX.*tif" RPC-d0-adj Master="$aoi_id"_010_RGB.tif SzW=1 Regul=0.05 NbVI=2 ZoomF=4 ResolTerrain=1 EZA=1 DirMEC=MM-"$aoi_id"_010_RGB_ZM4/ 
-mm3d Malt GeomImage "JAX.*tif" RPC-d0-adj Master="$aoi_id"_009_RGB.tif SzW=1 Regul=0.05 NbVI=2 ZoomF=4 ResolTerrain=1 EZA=1 DirMEC=MM-"$aoi_id"_009_RGB_ZM4/ 
-
-#convert dense depth tif to txt format
-mm3d TestLib GeoreferencedDepthMap MM-"$aoi_id"_009_RGB_ZM4 "$aoi_id"_009_RGB.tif Ori-RPC-d0-adj OutDir="$TxtDenseDir" Mask=1 Scale=4
-mm3d TestLib GeoreferencedDepthMap MM-"$aoi_id"_010_RGB_ZM4 "$aoi_id"_010_RGB.tif Ori-RPC-d0-adj OutDir="$TxtDenseDir" Mask=1 Scale=4
+for line in `cat "$DataDir"train.txt`
+do
+	img_name=${line%.*}
+	#generate dense depth in tif format
+	mm3d Malt GeomImage ".*tif" RPC-d0-adj Master="$img_name".tif SzW=1 Regul=0.05 NbVI=2 ZoomF=4 ResolTerrain=1 EZA=1 DirMEC=MM-"$img_name"/
+	#convert dense depth tif to txt format
+	mm3d TestLib GeoreferencedDepthMap MM-"$img_name" "$img_name".tif Ori-RPC-d0-adj OutDir="$TxtDenseDir" Mask=1 Scale=4
+done
 
 cd "$CodeDir"
 #Transform 3D points from UTM to geocentric coordinates.
 python3 utm_to_geocentric.py --file_dir "$TxtDenseDir"
 ```
 
-*Please replace the values from first to sixth lines in the above script to your own value.*
+*Please replace the values from first to third, and sixth lines in the above script to your own value.*
 
 #### Option 2: Use other software
 It is also possible if you prefer to use other software, just make sure your final result is organized this way:
