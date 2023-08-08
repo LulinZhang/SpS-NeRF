@@ -38,7 +38,7 @@ You can skip this step and directly download the [DFC2019 dataset AOI 214](https
 ### 1.1. Refine RPC with bundle adjustment
 Please use command `conda activate ba` to get into the `ba` environment for this step.
 ```
-BaseDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/input_prepare_data/
+BaseDir=/home/LZhang/Documents/CNESPostDoc/SpSNeRFProj/input_prepare_data/
 aoi_id=JAX_214
 DataDir="$BaseDir"DFC2019/
 OutputDir="$BaseDir"
@@ -55,12 +55,13 @@ You can skip this step and directly download the [Dense depth of DFC2019 dataset
 #### Option 1: Use software MicMac
 In our experiments, this step is done with the free, open-source photogrammetry software `MicMac`. You need to install MicMac following [this websit](https://github.com/micmacIGN/micmac).
 ```
+BaseDir=/home/LZhang/Documents/CNESPostDoc/SpSNeRFProj/input_prepare_data/
 aoi_id=JAX_214
 DataDir="$BaseDir"DFC2019/
 RootDir="$BaseDir"JAX_214_2_imgs/
 TxtDenseDir="$RootDir"dataset"$aoi_id"/root_dir/crops_rpcs_ba_v2/"$aoi_id"/DenseDepth_ZM4/
 MicMacDenseDir="$RootDir"DenseDepth/
-CodeDir=/home/LZhang/Documents/CNESPostDoc/SatNeRFProj/code/SpS-NeRF/
+CodeDir=/home/LZhang/Documents/CNESPostDoc/SpSNeRFProj/code/SpS-NeRF/
 
 mkdir "$MicMacDenseDir"
 mkdir "$TxtDenseDir"
@@ -105,8 +106,8 @@ It is also possible if you prefer to use other software, just make sure your fin
 Each image `ImageName` corresponds to four txt files as displayed below.
 
 ## 2. Train SpS-NeRF
+Please use command `conda activate spsnerf` to get into the `spsnerf` environment for this step.
 ```
-conda activate spsnerf
 ProjDir=/gpfs/users/lzhang/SpS-NeRF_test/
 exp_name=SpS_output"$aoi_id"-"$inputdds"-FnMd"$n_importance"-ds"$ds_lambda"-"$stdscale"
 Output="$ProjDir"/"$exp_name"
@@ -126,9 +127,9 @@ python3 main.py --aoi_id "$aoi_id" --model sps-nerf --exp_name "$exp_name" --roo
 
 ## 3. Test SpS-NeRF
 ### 3.1. Render novel views
+Please use command `conda activate spsnerf` to get into the `spsnerf` environment for this step.
 ```
-conda activate spsnerf
-Output=/gpfs/users/lzhang/SatNeRFProj/DFCDataClean_2imgs/SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1/
+Output=/gpfs/users/lzhang/SpSNeRFProj/DFCDataClean_2imgs/SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1/
 logs_dir="$Output"/logs
 run_id=SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1
 output_dir="$Output"/eval_spsnerf
@@ -140,9 +141,9 @@ python3 eval.py --run_id "$run_id" --logs_dir "$logs_dir" --output_dir "$output_
 *Please replace the value of `Output`, `run_id`, `output_dir` and `epoch_number` in the above script to your own settings.*
 
 ### 3.2. Generate DSM (Digital Surface Model)
+Please use command `conda activate spsnerf` to get into the `spsnerf` environment for this step.
 ```
-conda activate spsnerf
-Output=/gpfs/users/lzhang/SatNeRFProj/DFCDataClean_2imgs/SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1/
+Output=/gpfs/users/lzhang/SpSNeRFProj/DFCDataClean_2imgs/SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1/
 logs_dir="$Output"/logs
 run_id=SpS_outputJAX_214-DenseDepth_ZM4-FnMd0-ds1-1
 output_dir="$Output"/create_spsnerf_dsm
