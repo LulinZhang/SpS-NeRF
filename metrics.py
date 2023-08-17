@@ -115,11 +115,6 @@ class DepthLoss(torch.nn.Module):
             if self.usealldepth == False:
                 apply_depth_loss = is_not_in_expected_distribution(pred_depth, pred_std, target_depth, target_std)
 
-            print('pred_depth range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(pred_depth), torch.max(pred_depth), torch.mean(pred_depth)))            
-            print('pred_std range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(pred_std), torch.max(pred_std), torch.mean(pred_std)))            
-            print('target_depth range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(target_depth), torch.max(target_depth), torch.mean(target_depth)))            
-            print('target_std range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(target_std), torch.max(target_std), torch.mean(target_std)))            
-
             pred_depth = pred_depth[apply_depth_loss]
             if pred_depth.shape[0] == 0:
                 print('ZERO apply_depth_loss in this depth loss computation!')
