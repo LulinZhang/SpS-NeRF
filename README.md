@@ -108,14 +108,14 @@ Each image `ImageName` corresponds to four txt files as displayed below.
 ## 2. Train SpS-NeRF
 Please use command `conda activate spsnerf` to get into the `spsnerf` environment for this step.
 ```
-ProjDir=/gpfs/users/lzhang/SpS-NeRF_test/
-exp_name=SpS_output"$aoi_id"-"$inputdds"-FnMd"$n_importance"-ds"$ds_lambda"-"$stdscale"
 Output="$ProjDir"/"$exp_name"
 aoi_id=JAX_214
 inputdds=DenseDepth_ZM4
 n_importance=0
 ds_lambda=1
 stdscale=1
+ProjDir=/gpfs/users/lzhang/SpS-NeRF_test/
+exp_name=SpS_output"$aoi_id"-"$inputdds"-FnMd"$n_importance"-ds"$ds_lambda"-"$stdscale"
 rm -r "$Output"
 mkdir "$Output"
 cp Sh-SpS-Train-JAX_---_2imgs.sh "$Output"/.    
