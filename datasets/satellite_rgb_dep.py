@@ -342,7 +342,7 @@ class SatelliteRGBDEPDataset(Dataset):
             all_deprays += [rays_padded]
 
         all_valid_depth = torch.cat(all_valid_depth, 0)
-        all_deprays = torch.cat(all_deprays, 0)  # (len(json_files)*h*w, 8)
+        all_deprays = torch.cat(all_deprays, 0)  # (len(json_files)*h*w, 8), this should be the same as the one in rgb
         all_depths = torch.cat(all_depths, 0)  # (len(json_files)*h*w, 1)
         print('depth_min, depth_max: ', depth_min, depth_max)
         print('all_depths range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(all_depths), torch.max(all_depths), torch.mean(all_depths)))
@@ -351,7 +351,7 @@ class SatelliteRGBDEPDataset(Dataset):
         print('all_depth_stds range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(all_depth_stds), torch.max(all_depth_stds), torch.mean(all_depth_stds)))
         all_depth_stds = all_depth_stds*(depth_max-depth_min)
         print('all_depth_stds range: [{:.5f}, {:.5f}], mean: {:.5f}'.format(torch.min(all_depth_stds), torch.max(all_depth_stds), torch.mean(all_depth_stds)))
-        all_depths = torch.hstack([all_depths, all_weights])  # (len(json_files)*h*w, 11)
+        all_depths = torch.hstack([all_depths, all_weights])  # (len(json_files)*h*w, 2)
         all_deprays = all_deprays.type(torch.FloatTensor)
         all_depths = all_depths.type(torch.FloatTensor)
 
