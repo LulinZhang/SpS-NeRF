@@ -66,7 +66,7 @@ def get_rays(cols, rows, rpc, min_alt, max_alt):
     rays = rays.type(torch.FloatTensor)
     return rays
 
-def load_tensor_from_rgb_geotiff(img_path, downscale_factor, imethod=Image.BICUBIC):
+def load_tensor_from_rgb_geotiff(img_path, downscale_factor, imethod=Image.BILINEAR): #Image.BICUBIC leads to noisy pixel errors
     with rasterio.open(img_path, 'r') as f:
         img = np.transpose(f.read(), (1, 2, 0)) / 255.
     h, w = img.shape[:2]
