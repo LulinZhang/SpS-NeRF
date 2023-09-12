@@ -1,14 +1,12 @@
 # SpS-NeRF
 
-### [Project page](https://erupnik.github.io/SparseSatNerf.html)
-
-### [Youtube Video](https://youtu.be/_pgeFz-fQ7s)
-
-### [Slides](https://drive.google.com/file/d/1OPAG70lcbigdjac3RGG69OLdNCKVBIBS/view?usp=sharing)
+### [Project page](https://erupnik.github.io/SparseSatNerf.html) | [Youtube Video](https://youtu.be/_pgeFz-fQ7s) | [Slides](https://drive.google.com/file/d/1OPAG70lcbigdjac3RGG69OLdNCKVBIBS/view?usp=sharing)
 
 ### [SparseSat-NeRF: Dense Depth Supervised Neural Radiance Fields for Sparse Satellite Images](https://arxiv.org/pdf/2309.00277.pdf)
 *[Lulin Zhang](https://scholar.google.com/citations?user=tUebgRIAAAAJ&hl=fr&oi=ao),
 [Ewelina Rupnik](https://erupnik.github.io/)*
+
+This work has been accepted in the ISPRS Annals 2023 and won the [Best Workshop Paper Award](https://gsw2023.com/wp-content/uploads/2023/09/The%20Best.pdf).
 
 ![](documents/teaser.png)
 
