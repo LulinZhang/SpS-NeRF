@@ -56,6 +56,9 @@ You can skip this step and directly download the [Dense depth of DFC2019 dataset
 
 #### Option 1: Use software MicMac
 In our experiments, this step is done with the free, open-source photogrammetry software `MicMac`. You need to install MicMac following [this websit](https://github.com/micmacIGN/micmac).
+
+You'll need the [WGS84toUTM.xml](https://drive.google.com/file/d/1Tc_W9B0u0UjdYqeEplQYKVnn-63P--qr/view?usp=sharing) for coordinate transformation.
+
 ```
 BaseDir=/home/LZhang/Documents/CNESPostDoc/SpSNeRFProj/input_prepare_data/
 aoi_id=JAX_214
