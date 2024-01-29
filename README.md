@@ -57,6 +57,8 @@ You can skip this step and directly download the [Dense depth of DFC2019 dataset
 #### Option 1: Use software MicMac
 In our experiments, this step is done with the free, open-source photogrammetry software `MicMac`. You need to install MicMac following [this websit](https://github.com/micmacIGN/micmac).
 
+MicMac could not read the original JAX tif format of the training images, you need to convert the images before launching MicMac, by QGIS for example (with "raster -> conversion -> convert"), or you can download the [images we converted](https://drive.google.com/file/d/1Ki1p5CpAIpZPhohjwnUQiHiOdu5bOQAW/view?usp=sharing).
+
 You'll need the [WGS84toUTM.xml](https://drive.google.com/file/d/1Tc_W9B0u0UjdYqeEplQYKVnn-63P--qr/view?usp=sharing) for coordinate transformation.
 
 ```
