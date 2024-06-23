@@ -314,8 +314,8 @@ class SatelliteRGBDEPDataset(Dataset):
 
             print('{:.5f} percent of pixels are valid in depth map.'.format(depths.shape[0]*100.0/height/width))
 
-            densedepth_file = depth_dir+img_id+"_3DPts.txt"
-            cal_rmse_depth(densedepth_file, self.gt_dir, self.aoi_id)
+            #densedepth_file = depth_dir+img_id+"_3DPts.txt"
+            #cal_rmse_depth(densedepth_file, self.gt_dir, self.aoi_id)
 
             depths_padded = torch.zeros(height*width)
             depths_padded[np.where(valid_depth>0)[0]] = depths
