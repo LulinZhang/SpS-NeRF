@@ -148,7 +148,8 @@ def cal_rmse_depth(densedepth_file, gt_dir, aoi_id):
     dst_transform = None
 
     zonestring, resolution, upscale_factor = get_info(aoi_id)
-
+    
+    assert os.path.exists(densedepth_file), f"{densedepth_file} not found"
     get_dsm_from_dense_depth(densedepth_file, zonestring, dsm_out_path, resolution, roi_txt=roi_txt, dst_transform=dst_transform)
 
     dsm_in_path = dsm_out_path
